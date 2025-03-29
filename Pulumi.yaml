@@ -1,0 +1,47 @@
+name: pulumi-aws
+description: My first AWS project using Pulumi YAML
+runtime: yaml
+resources:
+  # Create an S3 bucket (AWS will generate a unique name)
+  my-bucket:
+    type: aws:s3:BucketV2
+
+  # Enable static website hosting
+  websiteConfig:
+    type: aws:s3:BucketWebsiteConfigurationV2
+    properties:
+      bucket: ${my-bucket.id}
+      indexDocument:
+        suffix: index.html
+      errorDocument:
+        key: error.html
+
+  # Upload index.html
+  indexHtml:
+    type: aws:s3:BucketObject
+    properties:
+      bucket: ${my-bucket.id}
+      key: index.html
+      source:
+        fn::fileAsset: ./index.html  # Corrected
+      contentType: text/html
+
+  # Upload error.html
+  errorHtml:
+    type: aws:s3:BucketObject
+    properties:
+      bucket: ${my-bucket.id}
+      key: error.html
+      source:
+        fn::fileAsset: ./error.html  # Corrected
+      contentType: text/html
+
+outputs:
+  bucketName: ${my-bucket.id}
+  websiteUrl: ${websiteConfig.websiteEndpoint}  # Fixed reference
+
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-yaml
+
